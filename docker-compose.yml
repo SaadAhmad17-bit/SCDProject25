@@ -4,31 +4,25 @@ services:
   mongodb:
     image: mongo:5.0
     container_name: nodevault-mongodb
-    restart: always
+    restart: unless-stopped
     ports:
       - "27017:27017"
-    environment:
-      MONGO_INITDB_DATABASE: nodevault
     volumes:
       - mongodb_data:/data/db
     networks:
       - nodevault-network
 
-  nodevault:
-    build: .
-    container_name: nodevault-app
-    restart: always
+  backend:
+    build: .  
+    container_name: nodevault-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/nodevault
+      - NODE_ENV=production
     depends_on:
       - mongodb
-    environment:
-      - MONGODB_URI=mongodb://mongodb:27017
-      - DB_NAME=nodevault
-      - NODE_ENV=production
-    volumes:
-      - ./backups:/app/backups
-      - ./data:/app/data
-    stdin_open: true
-    tty: true
     networks:
       - nodevault-network
 
