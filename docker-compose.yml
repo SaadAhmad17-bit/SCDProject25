@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:5.0
+    container_name: nodevault-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: nodevault
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - nodevault-network
+
+  nodevault:
+    build: .
+    container_name: nodevault-app
+    restart: always
+    depends_on:
+      - mongodb
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017
+      - DB_NAME=nodevault
+      - NODE_ENV=production
+    volumes:
+      - ./backups:/app/backups
+      - ./data:/app/data
+    stdin_open: true
+    tty: true
+    networks:
+      - nodevault-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  nodevault-network:
+    driver: bridge
